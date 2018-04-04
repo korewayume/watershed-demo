@@ -11,6 +11,12 @@ Pos = namedtuple('Pos', ['r', 'c'])
 image = np.array(Image.open("fruits.png"))
 markers = np.array(Image.open("markers.png")).astype(np.int)
 queue = PriorityQueue()
+time = dict(time=0)
+
+
+def timestep():
+    time["time"] += 1
+    return time["time"]
 
 
 def showmarkers(iteration=None, overlap=False):
@@ -40,7 +46,7 @@ def init():
     for r in range(1, image.shape[0] - 1):
         for c in range(1, image.shape[1] - 1):
             if markers[r, c] > 0:
-                queue.put((0, Pos(r, c)))
+                queue.put((0, timestep(), Pos(r, c)))
 
 
 def dilate(pos):
@@ -74,7 +80,7 @@ def dilate(pos):
         try:
             if markers[neighbor] == UNLABELLED:
                 markers[neighbor] = markers[pos]
-                queue.put((diff(neighbor, pos), neighbor))
+                queue.put((diff(neighbor, pos), timestep(), neighbor))
         except IndexError:
             pass
 
@@ -87,7 +93,7 @@ def process():
             if iteration % 10000 == 0:
                 showmarkers(iteration)
 
-            _, pos = queue.get_nowait()
+            _, _, pos = queue.get_nowait()
 
             dilate(pos)
 
